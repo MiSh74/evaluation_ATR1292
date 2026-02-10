@@ -5,12 +5,15 @@ import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import styles from './AppLayout.module.css';
 
+import { AddFundsModal } from './AddFundsModal';
+
 const { Content } = Layout;
 
 export const AppLayout: React.FC = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
+    const [isAddFundsOpen, setIsAddFundsOpen] = React.useState(false);
 
     const handleLogout = async () => {
         await logout();
@@ -51,12 +54,18 @@ export const AppLayout: React.FC = () => {
                 </div>
 
                 <div className={styles['app-header-right']}>
-                    <div className={styles['balance-display']} onClick={() => navigate('/profile')}>
+                    <div className={styles['balance-display']} onClick={() => setIsAddFundsOpen(true)}>
                         <WalletOutlined className={styles['balance-icon']} />
                         <span className={styles['balance-amount']}>
-                            ${parseFloat(user?.balance || '0').toFixed(2)}
+                            ${parseFloat(String(user?.balance || '0')).toFixed(2)}
                         </span>
+                        <div className={styles['add-funds-plus']}>+</div>
                     </div>
+
+                    <AddFundsModal
+                        open={isAddFundsOpen}
+                        onClose={() => setIsAddFundsOpen(false)}
+                    />
 
                     <div className={styles['user-menu']} onClick={() => navigate('/profile')}>
                         <div className={styles['user-avatar']}>

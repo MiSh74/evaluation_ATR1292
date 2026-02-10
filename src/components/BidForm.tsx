@@ -42,11 +42,22 @@ export const BidForm: React.FC<BidFormProps> = ({
             queryClient.invalidateQueries({ queryKey: ['auction-bids', auctionId] });
         },
         onError: (error: any) => {
-            // Show backend validation errors
-            const errorMessage = error.response?.data?.message || 'Failed to place bid';
+            const errorMsg = error.response?.data?.message;
+            const errorCode = error.response?.data?.errorCode;
+
+            let description = errorMsg || 'Failed to place bid';
+
+            if (errorCode === 'INSUFFICIENT_FUNDS') {
+                description = 'You do not have enough balance to place this bid.';
+            } else if (errorCode === 'BID_TOO_LOW') {
+                description = 'Your bid must be higher than the current price plus minimum increment.';
+            } else if (errorCode === 'AUCTION_CLOSED' || errorCode === 'AUCTION_EXPIRED') {
+                description = 'This auction is no longer accepting bids.';
+            }
+
             notification.error({
                 message: 'Bid Failed',
-                description: errorMessage,
+                description,
             });
         },
     });

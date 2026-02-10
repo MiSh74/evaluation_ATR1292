@@ -1,20 +1,20 @@
-import type { Bid } from './auction';
 
 export interface NewBidEvent {
-    bid: Bid;
-    auctionId: string;
-    currentPrice: number;
+    amount: number;
+    bidderName: string;
+    timestamp: string;
+    auctionId?: string; // Optional helper mapping
 }
 
 export interface AuctionEndingSoonEvent {
     auctionId: string;
-    timeRemaining: number;
+    secondsRemaining: number;
 }
 
 export interface AuctionSoldEvent {
     auctionId: string;
+    winnerName: string;
     finalPrice: number;
-    winnerUsername: string;
 }
 
 export interface AuctionExpiredEvent {

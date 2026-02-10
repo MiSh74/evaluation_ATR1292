@@ -10,9 +10,6 @@ import { getSocket } from '../sockets/socket';
 
 import type {
     NewBidEvent,
-    AuctionEndingSoonEvent,
-    AuctionSoldEvent,
-    AuctionExpiredEvent,
     ViewerCountEvent,
 } from '../types/socket';
 
@@ -21,7 +18,7 @@ const { Title, Text } = Typography;
 export const AuctionDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user, refreshUser } = useAuth();
     const queryClient = useQueryClient();
     const [viewerCount, setViewerCount] = useState(0);
     const [isEndingSoon, setIsEndingSoon] = useState(false);
@@ -71,16 +68,11 @@ export const AuctionDetail: React.FC = () => {
         // Join the auction room using the correct event format
         socket.emit('join_auction', { auctionId: id });
 
-        // DEBUG: Listen to ALL events to see what's coming in
-        socket.onAny((eventName, ...args) => {
-            console.log(`📡 Received event '${eventName}':`, args);
-        });
-
         const handleConnect = () => {
             console.log('✅ Socket connected (in component)');
             setSocketConnected(true);
             // Re-join on reconnect
-            socket.emit('join', `auction:${id}`);
+            socket.emit('join_auction', { auctionId: id });
             // Invalidate queries to refetch latest data
             queryClient.invalidateQueries({ queryKey: ['auction', id] });
             queryClient.invalidateQueries({ queryKey: ['auction-bids', id] });
@@ -92,28 +84,30 @@ export const AuctionDetail: React.FC = () => {
         };
 
         // Handle NEW_BID event
-        // Note: No need to check auctionId - room subscription ensures we only get events for this auction
         const handleNewBid = (event: NewBidEvent) => {
             console.log('🔥 NEW_BID received:', event);
             // Invalidate queries to refetch latest data
             queryClient.invalidateQueries({ queryKey: ['auction', id] });
             queryClient.invalidateQueries({ queryKey: ['auction-bids', id] });
+            // Optionally refresh user balance if they might be outbid refund
+            if (user) refreshUser();
         };
 
-        const handleViewerCount = (event: ViewerCountEvent) => {
-            setViewerCount(event.count);
+        const handleViewerCount = ({ count }: ViewerCountEvent) => {
+            setViewerCount(count);
         };
 
-        const handleEndingSoon = (event: AuctionEndingSoonEvent) => {
+        const handleEndingSoon = () => {
             setIsEndingSoon(true);
         };
 
-        const handleAuctionSold = (event: AuctionSoldEvent) => {
+        const handleAuctionSold = () => {
             queryClient.invalidateQueries({ queryKey: ['auction', id] });
             queryClient.invalidateQueries({ queryKey: ['auction-bids', id] });
+            if (user) refreshUser();
         };
 
-        const handleAuctionExpired = (event: AuctionExpiredEvent) => {
+        const handleAuctionExpired = () => {
             queryClient.invalidateQueries({ queryKey: ['auction', id] });
             queryClient.invalidateQueries({ queryKey: ['auction-bids', id] });
         };
@@ -121,29 +115,17 @@ export const AuctionDetail: React.FC = () => {
         // Attach listeners
         socket.on('connect', handleConnect);
         socket.on('disconnect', handleDisconnect);
-
         socket.on('NEW_BID', handleNewBid);
-        socket.on('newBid', handleNewBid);
-        socket.on('new_bid', handleNewBid);
-
         socket.on('VIEWER_COUNT', handleViewerCount);
-        socket.on('viewerCount', handleViewerCount); // Add CamelCase variant
-        socket.on('viewer_count', handleViewerCount); // Add snake_case variant
-
         socket.on('AUCTION_ENDING_SOON', handleEndingSoon);
         socket.on('AUCTION_SOLD', handleAuctionSold);
         socket.on('AUCTION_EXPIRED', handleAuctionExpired);
 
         return () => {
-            socket.offAny(); // Remove debug listener
             socket.off('connect', handleConnect);
             socket.off('disconnect', handleDisconnect);
             socket.off('NEW_BID', handleNewBid);
-            socket.off('newBid', handleNewBid);
-            socket.off('new_bid', handleNewBid);
             socket.off('VIEWER_COUNT', handleViewerCount);
-            socket.off('viewerCount', handleViewerCount);
-            socket.off('viewer_count', handleViewerCount);
             socket.off('AUCTION_ENDING_SOON', handleEndingSoon);
             socket.off('AUCTION_SOLD', handleAuctionSold);
             socket.off('AUCTION_EXPIRED', handleAuctionExpired);
@@ -249,8 +231,20 @@ export const AuctionDetail: React.FC = () => {
                     <Descriptions.Item label="Current Price">
                         <Text strong style={{ fontSize: 18, color: '#1890ff' }}>
                             {formatPrice(auction.currentPrice)}
+                            {auction.highestBidderUsername && (
+                                <Tag style={{ marginLeft: 8 }} color="blue">
+                                    Highest Bid: {auction.highestBidderUsername}
+                                </Tag>
+                            )}
                         </Text>
                     </Descriptions.Item>
+                    {user && (
+                        <Descriptions.Item label="Your Balance">
+                            <Text strong style={{ color: '#52c41a' }}>
+                                {formatPrice(Number(user.balance))}
+                            </Text>
+                        </Descriptions.Item>
+                    )}
                     <Descriptions.Item label="Start Time">
                         {formatDateTime(auction.createdAt)}
                     </Descriptions.Item>
@@ -260,11 +254,14 @@ export const AuctionDetail: React.FC = () => {
                 </Descriptions>
 
                 {!isBiddingDisabled && auction.status === 'active' && user?.id !== auction.creator.id && (
-                    <BidForm
-                        auctionId={auction.id}
-                        currentPrice={auction.currentPrice}
-                        minIncrement={auction.minimumBidIncrement}
-                    />
+                    <div style={{ marginTop: 24 }}>
+                        <Title level={4}>Place a Bid</Title>
+                        <BidForm
+                            auctionId={auction.id}
+                            currentPrice={auction.currentPrice}
+                            minIncrement={auction.minimumBidIncrement}
+                        />
+                    </div>
                 )}
 
                 {user?.id === auction.creator.id && auction.status === 'active' && (
@@ -281,7 +278,7 @@ export const AuctionDetail: React.FC = () => {
                         message={auction.status === 'sold' ? 'Auction Sold' : 'Auction Expired'}
                         description={
                             auction.status === 'sold'
-                                ? 'This auction has been sold.'
+                                ? `This auction has been sold to ${auction.highestBidderUsername || 'winner'} for ${formatPrice(auction.currentPrice)}.`
                                 : 'This auction has expired without a sale.'
                         }
                         type="info"
@@ -303,7 +300,7 @@ export const AuctionDetail: React.FC = () => {
                                     title={
                                         <Space>
                                             <Text strong>{formatPrice(bid.amount)}</Text>
-                                            <Text type="secondary">by {bid.id}</Text>
+                                            <Text type="secondary">by {bid.username || bid.id}</Text>
                                         </Space>
                                     }
                                     description={formatDateTime(bid.createdAt)}

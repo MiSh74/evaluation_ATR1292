@@ -1,52 +1,14 @@
 import React, { useState } from 'react';
-import { Card, Typography, Button, Statistic, Row, Col, Modal, InputNumber, notification } from 'antd';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Card, Typography, Button, Statistic, Row, Col } from 'antd';
 import { useAuth } from '../auth/AuthContext';
-import { authApi } from '../api/auth.api';
 import { UserOutlined, WalletOutlined } from '@ant-design/icons';
+import { AddFundsModal } from '../components/AddFundsModal';
 
 const { Title, Text } = Typography;
 
 export const Profile: React.FC = () => {
-    const { user: authUser, setUser } = useAuth();
-    const queryClient = useQueryClient();
+    const { user } = useAuth();
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [addAmount, setAddAmount] = useState<number | null>(100);
-
-    // Use TanStack Query for fetching user profile
-    const { data: user } = useQuery({
-        queryKey: ['profile'],
-        queryFn: () => authApi.getProfile(),
-        initialData: authUser || undefined,
-    });
-
-    // Mock funds mutation
-    const addFundsMutation = useMutation({
-        mutationFn: async (amount: number) => {
-            // MOCK: In real app: Calls API POST /wallet/deposit
-            return { balance: (parseFloat(user?.balance || '0') + amount).toFixed(2) };
-        },
-        onSuccess: (data) => {
-            notification.success({
-                message: 'Funds Added',
-                description: `Successfully added $${addAmount} to your wallet. (Mock)`,
-            });
-
-            // Update local context user
-            if (authUser) {
-                setUser({ ...authUser, balance: data.balance });
-            }
-
-            // Invalidate query to refetch
-            queryClient.invalidateQueries({ queryKey: ['profile'] });
-            setIsModalOpen(false);
-        },
-    });
-
-    const handleAddFunds = () => {
-        if (!addAmount || !user) return;
-        addFundsMutation.mutate(addAmount);
-    };
 
     if (!user) return null;
 
@@ -76,7 +38,7 @@ export const Profile: React.FC = () => {
                     <Card title="Wallet Balance" bordered={false}>
                         <Statistic
                             title="Current Balance"
-                            value={user.balance}
+                            value={Number(user.balance)}
                             precision={2}
                             prefix="$"
                             valueStyle={{ color: '#3f8600' }}
@@ -93,21 +55,10 @@ export const Profile: React.FC = () => {
                 </Col>
             </Row>
 
-            <Modal title="Add Funds to Wallet" open={isModalOpen} onOk={handleAddFunds} onCancel={() => setIsModalOpen(false)}>
-                <p>Select amount to deposit:</p>
-                <InputNumber
-                    min={1}
-                    max={10000}
-                    defaultValue={100}
-                    prefix="$"
-                    style={{ width: '100%' }}
-                    onChange={(val) => setAddAmount(val)}
-                    value={addAmount}
-                />
-                <Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
-                    Note: This is a simulation. No real money is charged.
-                </Text>
-            </Modal>
+            <AddFundsModal
+                open={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+            />
         </div>
     );
 };

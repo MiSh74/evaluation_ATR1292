@@ -13,11 +13,16 @@ export const authApi = {
     },
 
     getProfile: async (): Promise<User> => {
-        const response = await apiClient.get<User>('/auth/profile');
+        const response = await apiClient.get<User>('/users/me');
         return response.data;
     },
 
     logout: async (): Promise<void> => {
         await apiClient.post('/auth/logout');
+    },
+
+    addFunds: async (amount: number): Promise<{ balance: number }> => {
+        const response = await apiClient.post<{ balance: number }>('/users/me/funds', { amount });
+        return response.data;
     },
 };
