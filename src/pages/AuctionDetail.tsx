@@ -11,6 +11,7 @@ import { getSocket } from '../sockets/socket';
 import type {
     NewBidEvent,
     ViewerCountEvent,
+    AuctionEndingSoonEvent,
 } from '../types/socket';
 
 const { Title, Text } = Typography;
@@ -97,8 +98,15 @@ export const AuctionDetail: React.FC = () => {
             setViewerCount(count);
         };
 
-        const handleEndingSoon = () => {
+        const handleEndingSoon = (data: AuctionEndingSoonEvent) => {
+            console.log(`🔔 Auction ${data.auctionId} ending soon!`);
             setIsEndingSoon(true);
+            notification.warning({
+                message: 'Auction Ending Soon!',
+                description: `Auction ${auction.title} ends in 5 minutes! Place your final bids now.`,
+                duration: 10,
+                placement: 'topRight',
+            });
         };
 
         const handleAuctionSold = () => {
@@ -218,6 +226,9 @@ export const AuctionDetail: React.FC = () => {
                         <Tag color={socketConnected ? 'success' : 'error'}>
                             {socketConnected ? 'LIVE' : 'OFFLINE'}
                         </Tag>
+                        {isEndingSoon && auction.status === 'active' && (
+                            <Tag color="volcano" style={{ fontWeight: 'bold' }}>CLOSING SOON</Tag>
+                        )}
                         <EyeOutlined />
                         <Text>{viewerCount} viewers</Text>
                     </Space>
@@ -249,7 +260,9 @@ export const AuctionDetail: React.FC = () => {
                         {formatDateTime(auction.createdAt)}
                     </Descriptions.Item>
                     <Descriptions.Item label="End Time">
-                        {formatDateTime(auction.endsAt)}
+                        <Text type={isEndingSoon ? 'danger' : undefined} strong={isEndingSoon}>
+                            {formatDateTime(auction.endsAt)}
+                        </Text>
                     </Descriptions.Item>
                 </Descriptions>
 
