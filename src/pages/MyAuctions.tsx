@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Tabs, Table, Tag, Typography, Button, Empty } from 'antd';
+import { Tabs, Table, Tag, Typography, Button } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../auth/AuthContext';
 import { auctionsApi } from '../api/auctions.api';
-import type { Auction } from '../types/auction';
+import type { Auction, UserBid } from '../types/auction';
 
 const { Title } = Typography;
 
@@ -13,14 +13,23 @@ export const MyAuctions: React.FC = () => {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('listings');
 
-    // Use TanStack Query for fetching user listings
-    const { data: listings, isLoading } = useQuery({
+    // Fetch user listings
+    const { data: listings, isLoading: isLoadingListings } = useQuery({
         queryKey: ['my-auctions', { userId: user?.id, type: 'listings' }],
-        queryFn: () => auctionsApi.getAuctions({ sellerId: user?.id, limit: 100 }),
+        queryFn: () => auctionsApi.getUserAuctions({ limit: 100 }),
         enabled: !!user && activeTab === 'listings',
     });
 
-    const auctions = listings?.items || [];
+
+    // Fetch auctions user has bid on
+    const { data: bidsList, isLoading: isLoadingBids } = useQuery({
+        queryKey: ['my-auctions', { userId: user?.id, type: 'bids' }],
+        queryFn: () => auctionsApi.getUserBids({ limit: 100 }),
+        enabled: !!user && activeTab === 'bids',
+    });
+
+    const auctionsData: Auction[] = listings?.items || [];
+    const bidsData: UserBid[] = bidsList?.items || [];
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -32,7 +41,7 @@ export const MyAuctions: React.FC = () => {
         }
     };
 
-    const columns = [
+    const listingsColumns = [
         {
             title: 'Title',
             dataIndex: 'title',
@@ -49,7 +58,7 @@ export const MyAuctions: React.FC = () => {
             dataIndex: 'status',
             key: 'status',
             render: (status: string) => (
-                <Tag color={getStatusColor(status)}>{status.toUpperCase()}</Tag>
+                <Tag color={getStatusColor(status)}>{status?.toUpperCase()}</Tag>
             ),
         },
         {
@@ -63,16 +72,63 @@ export const MyAuctions: React.FC = () => {
         },
     ];
 
+    const bidsColumns = [
+        {
+            title: 'Item Name',
+            key: 'itemName',
+            render: (_: any, record: UserBid) => record.auction.title,
+        },
+        {
+            title: 'Price',
+            dataIndex: 'amount',
+            key: 'price',
+            render: (amount: number) => `$${Number(amount).toFixed(2)}`,
+        },
+        {
+            title: 'Date',
+            dataIndex: 'createdAt',
+            key: 'date',
+            render: (date: string) => new Date(date).toLocaleDateString(),
+        },
+        {
+            title: 'Status',
+            key: 'status',
+            render: (_: any, record: UserBid) => (
+                <Tag color={getStatusColor(record.auction.status)}>{record.auction.status.toUpperCase()}</Tag>
+            ),
+        },
+        {
+            title: 'Won/Lose',
+            key: 'result',
+            render: (_: any, record: UserBid) => {
+                if (record.auction.status !== 'sold' && record.auction.status !== 'expired') {
+                    return <Tag>Ongoing</Tag>;
+                }
+                const isWinner = Number(record.amount) >= Number(record.auction.currentPrice);
+                return isWinner ? <Tag color="success">WON</Tag> : <Tag color="error">LOST</Tag>;
+            },
+        },
+        {
+            title: 'Action',
+            key: 'action',
+            render: (_: any, record: UserBid) => (
+                <Button size="small" onClick={() => navigate(`/auctions/${record.auction.id}`)}>
+                    View
+                </Button>
+            ),
+        },
+    ];
+
     const items = [
         {
             key: 'listings',
             label: 'My Listings',
             children: (
                 <Table
-                    columns={columns}
-                    dataSource={auctions}
+                    columns={listingsColumns}
+                    dataSource={auctionsData}
                     rowKey="id"
-                    loading={isLoading}
+                    loading={isLoadingListings}
                     pagination={{ pageSize: 10 }}
                 />
             ),
@@ -81,9 +137,14 @@ export const MyAuctions: React.FC = () => {
             key: 'bids',
             label: 'My Bids',
             children: (
-                <div style={{ textAlign: 'center', padding: 40 }}>
-                    <Empty description="Bid history feature coming soon!" />
-                </div>
+                <Table
+                    columns={bidsColumns}
+                    dataSource={bidsData}
+                    rowKey="id"
+                    loading={isLoadingBids}
+                    pagination={{ pageSize: 10 }}
+                    locale={{ emptyText: 'You haven\'t placed any bids yet.' }}
+                />
             ),
         },
     ];
@@ -91,7 +152,7 @@ export const MyAuctions: React.FC = () => {
     return (
         <div style={{ padding: 24 }}>
             <Title level={2} style={{ marginBottom: 24 }}>My Activity</Title>
-            <Tabs defaultActiveKey="listings" onChange={setActiveTab} items={items} />
+            <Tabs activeKey={activeTab} onChange={setActiveTab} items={items} />
         </div>
     );
 };

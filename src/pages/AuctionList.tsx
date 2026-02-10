@@ -188,8 +188,8 @@ export const AuctionList: React.FC = () => {
                                     <div className={styles['auction-card-footer']}>
                                         <div
                                             className={`${styles['auction-card-timer']} ${isEndingSoon(auction.endsAt)
-                                                    ? styles['auction-card-timer-urgent']
-                                                    : ''
+                                                ? styles['auction-card-timer-urgent']
+                                                : ''
                                                 }`}
                                         >
                                             {isEndingSoon(auction.endsAt) && <FireOutlined />}
@@ -197,7 +197,7 @@ export const AuctionList: React.FC = () => {
                                             {getTimeRemaining(auction.endsAt)}
                                         </div>
                                         <div className={styles['auction-card-bids']}>
-                                            💰 {auction.bids?.length || 0} bids
+                                            💰 {auction.bidCount || 0} bids
                                         </div>
                                     </div>
                                 </div>

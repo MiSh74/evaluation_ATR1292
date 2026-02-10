@@ -25,6 +25,7 @@ export interface Auction {
         email: string;
     }
     viewerCount?: number;
+    bidCount: number;
 }
 
 export interface AuctionListResponse {
@@ -52,4 +53,26 @@ export interface CreateAuctionRequest {
     startingPrice: number;
     // minimumBidIncrement: number;
     endsAt: string;
+}
+
+export interface UserBid {
+    id: string;
+    amount: string | number;
+    createdAt: string;
+    auction: {
+        id: string;
+        title: string;
+        status: 'pending' | 'active' | 'sold' | 'expired';
+        currentPrice: string | number;
+    }
+}
+
+export interface UserBidListResponse {
+    items: UserBid[];
+    pagination: {
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    }
 }
