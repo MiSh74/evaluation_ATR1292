@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AuthProvider } from './auth/AuthContext';
+import { SocketProvider } from './sockets/SocketContext';
 import { ProtectedRoute } from './auth/ProtectedRoute';
 import { AppLayout } from './components/AppLayout';
 import { Login } from './pages/Login';
@@ -29,28 +30,30 @@ const App: React.FC = () => {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+          <SocketProvider>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
 
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <AppLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<Navigate to="/auctions" replace />} />
-              <Route path="auctions" element={<AuctionList />} />
-              <Route path="auctions/create" element={<CreateAuction />} />
-              <Route path="auctions/:id" element={<AuctionDetail />} />
-              <Route path="my-auctions" element={<MyAuctions />} />
-              <Route path="profile" element={<Profile />} />
-            </Route>
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <AppLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<Navigate to="/auctions" replace />} />
+                <Route path="auctions" element={<AuctionList />} />
+                <Route path="auctions/create" element={<CreateAuction />} />
+                <Route path="auctions/:id" element={<AuctionDetail />} />
+                <Route path="my-auctions" element={<MyAuctions />} />
+                <Route path="profile" element={<Profile />} />
+              </Route>
 
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </SocketProvider>
         </AuthProvider>
       </BrowserRouter>
       <ReactQueryDevtools initialIsOpen={false} />

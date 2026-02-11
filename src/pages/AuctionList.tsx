@@ -4,6 +4,7 @@ import { PlusOutlined, ClockCircleOutlined, TrophyOutlined, FireOutlined } from 
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { auctionsApi } from '../api/auctions.api';
+import type { AxiosError } from 'axios';
 import styles from './AuctionList.module.css';
 
 const { Option } = Select;
@@ -17,7 +18,7 @@ export const AuctionList: React.FC = () => {
     const { data, isLoading, error } = useQuery({
         queryKey: ['auctions', { page, status }],
         queryFn: () => {
-            const params: any = { page, limit: pageSize };
+            const params: { page: number; limit: number; status?: string } = { page, limit: pageSize };
             if (status) params.status = status;
             return auctionsApi.getAuctions(params);
         },
@@ -27,7 +28,7 @@ export const AuctionList: React.FC = () => {
         if (error) {
             notification.error({
                 message: 'Failed to Load Auctions',
-                description: (error as any).response?.data?.message || 'Unable to fetch auctions.',
+                description: (error as AxiosError<{ message: string }>).response?.data?.message || 'Unable to fetch auctions.',
             });
         }
     }, [error]);

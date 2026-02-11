@@ -1,0 +1,63 @@
+
+> livebid-frontend@0.0.0 lint
+> eslint .
+
+
+/home/user/Desktop/ai/live-bid/livebid-frontend/src/auth/AuthContext.tsx
+   19:14  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+   56:25  error  Unexpected any. Specify a different type                                                                                        @typescript-eslint/no-explicit-any
+   82:25  error  Unexpected any. Specify a different type                                                                                        @typescript-eslint/no-explicit-any
+  101:25  error  Unexpected any. Specify a different type                                                                                        @typescript-eslint/no-explicit-any
+  113:18  error  'error' is defined but never used                                                                                               @typescript-eslint/no-unused-vars
+
+/home/user/Desktop/ai/live-bid/livebid-frontend/src/components/AddFundsModal.tsx
+  33:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/user/Desktop/ai/live-bid/livebid-frontend/src/components/BidForm.tsx
+  44:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/user/Desktop/ai/live-bid/livebid-frontend/src/pages/AuctionDetail.tsx
+  43:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/user/Desktop/ai/live-bid/livebid-frontend/src/pages/AuctionList.tsx
+  20:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  30:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/user/Desktop/ai/live-bid/livebid-frontend/src/pages/CreateAuction.tsx
+  32:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  40:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/user/Desktop/ai/live-bid/livebid-frontend/src/pages/Login.tsx
+  18:18  error  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/user/Desktop/ai/live-bid/livebid-frontend/src/pages/MyAuctions.tsx
+   67:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   79:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   96:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  103:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  114:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/user/Desktop/ai/live-bid/livebid-frontend/src/pages/Register.tsx
+  18:18  error  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/user/Desktop/ai/live-bid/livebid-frontend/src/sockets/SocketContext.tsx
+  13:14  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         react-refresh/only-export-components
+  34:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/home/user/Desktop/ai/live-bid/livebid-frontend/src/sockets/SocketContext.tsx:34:13
+  32 |         if (user && token) {
+  33 |             const socketInstance = connectSocket(token);
+> 34 |             setSocket(socketInstance);
+     |             ^^^^^^^^^ Avoid calling setState() directly within an effect
+  35 |
+  36 |             const onConnect = () => setIsConnected(true);
+  37 |             const onDisconnect = () => setIsConnected(false);  react-hooks/set-state-in-effect
+
+✖ 21 problems (21 errors, 0 warnings)
+

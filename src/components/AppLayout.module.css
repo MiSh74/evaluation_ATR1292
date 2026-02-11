@@ -46,6 +46,24 @@
     letter-spacing: -0.5px;
 }
 
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-top: 8px;
+    border: 2px solid #fff;
+}
+
+.status-online {
+    background-color: #52c41a;
+    box-shadow: 0 0 8px #52c41a;
+}
+
+.status-offline {
+    background-color: #ff4d4f;
+    box-shadow: 0 0 8px #ff4d4f;
+}
+
 .app-nav {
     display: flex;
     gap: 8px;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Badge } from 'antd';
 import { DollarOutlined } from '@ant-design/icons';
-import { useAuth } from '../auth/AuthContext';
+import { useAuth } from '../auth/useAuth';
 
 export const BalanceBadge: React.FC = () => {
     const { user } = useAuth();

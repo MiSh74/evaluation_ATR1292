@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card, Typography, Button, Statistic, Row, Col } from 'antd';
-import { useAuth } from '../auth/AuthContext';
+import { useAuth } from '../auth/useAuth';
 import { UserOutlined, WalletOutlined } from '@ant-design/icons';
 import { AddFundsModal } from '../components/AddFundsModal';
 

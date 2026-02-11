@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { auctionsApi } from '../api/auctions.api';
+import type { AxiosError } from 'axios';
 import type { CreateAuctionRequest } from '../types/auction';
 import dayjs from 'dayjs';
 
@@ -29,15 +30,16 @@ export const CreateAuction: React.FC = () => {
 
             navigate(`/auctions/${newAuction.id}`);
         },
-        onError: (error: any) => {
+        onError: (error) => {
+            const axiosError = error as AxiosError<{ message: string }>;
             notification.error({
                 message: 'Failed to Create Auction',
-                description: error.response?.data?.message || 'Please check your inputs and try again.',
+                description: axiosError.response?.data?.message || 'Please check your inputs and try again.',
             });
         },
     });
 
-    const onFinish = (values: any) => {
+    const onFinish = (values: { title: string; description: string; startingPrice: number; endsAt: dayjs.Dayjs }) => {
         const auctionData: CreateAuctionRequest = {
             title: values.title,
             description: values.description,

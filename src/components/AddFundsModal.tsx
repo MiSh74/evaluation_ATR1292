@@ -3,7 +3,8 @@ import { Modal, Form, InputNumber, Button, Space, notification, Typography } fro
 import { PlusCircleOutlined, WalletOutlined } from '@ant-design/icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { authApi } from '../api/auth.api';
-import { useAuth } from '../auth/AuthContext';
+import { useAuth } from '../auth/useAuth';
+import { AxiosError } from 'axios';
 
 const { Text } = Typography;
 
@@ -30,10 +31,11 @@ export const AddFundsModal: React.FC<AddFundsModalProps> = ({ open, onClose }) =
             form.resetFields();
             onClose();
         },
-        onError: (error: any) => {
+        onError: (error) => {
+            const axiosError = error as AxiosError<{ message: string }>;
             notification.error({
                 message: 'Failed to Add Funds',
-                description: error.response?.data?.message || 'Something went wrong. Please try again.',
+                description: axiosError.response?.data?.message || 'Something went wrong. Please try again.',
             });
         },
     });

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Form, Input, Button } from 'antd';
 import { UserOutlined, LockOutlined, ThunderboltOutlined } from '@ant-design/icons';
-import { useAuth } from '../auth/AuthContext';
+import { useAuth } from '../auth/useAuth';
 import { useNavigate, Link } from 'react-router-dom';
 import styles from './Login.module.css';
 
@@ -15,7 +15,7 @@ export const Login: React.FC = () => {
         try {
             await login(values);
             navigate('/');
-        } catch (error) {
+        } catch {
             // Error handled in AuthContext
         } finally {
             setLoading(false);

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Form, Input, Button } from 'antd';
 import { LockOutlined, MailOutlined, ThunderboltOutlined } from '@ant-design/icons';
-import { useAuth } from '../auth/AuthContext';
+import { useAuth } from '../auth/useAuth';
 import { useNavigate, Link } from 'react-router-dom';
 import styles from './Login.module.css'; // Reusing same styles
 
@@ -15,7 +15,7 @@ export const Register: React.FC = () => {
         try {
             await register({ email: values.email, password: values.password });
             navigate('/');
-        } catch (error) {
+        } catch {
             // Error handled in AuthContext
         } finally {
             setLoading(false);

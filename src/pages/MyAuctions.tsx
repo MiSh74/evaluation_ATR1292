@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Tabs, Table, Tag, Typography, Button } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '../auth/AuthContext';
+import { useAuth } from '../auth/useAuth';
 import { auctionsApi } from '../api/auctions.api';
 import type { Auction, UserBid } from '../types/auction';
 
@@ -64,7 +64,7 @@ export const MyAuctions: React.FC = () => {
         {
             title: 'Action',
             key: 'action',
-            render: (_: any, record: Auction) => (
+            render: (_: unknown, record: Auction) => (
                 <Button size="small" onClick={() => navigate(`/auctions/${record.id}`)}>
                     View
                 </Button>
@@ -76,7 +76,7 @@ export const MyAuctions: React.FC = () => {
         {
             title: 'Item Name',
             key: 'itemName',
-            render: (_: any, record: UserBid) => record.auction.title,
+            render: (_: unknown, record: UserBid) => record.auction.title,
         },
         {
             title: 'Price',
@@ -93,14 +93,14 @@ export const MyAuctions: React.FC = () => {
         {
             title: 'Status',
             key: 'status',
-            render: (_: any, record: UserBid) => (
+            render: (_: unknown, record: UserBid) => (
                 <Tag color={getStatusColor(record.auction.status)}>{record.auction.status.toUpperCase()}</Tag>
             ),
         },
         {
             title: 'Won/Lose',
             key: 'result',
-            render: (_: any, record: UserBid) => {
+            render: (_: unknown, record: UserBid) => {
                 if (record.auction.status !== 'sold' && record.auction.status !== 'expired') {
                     return <Tag>Ongoing</Tag>;
                 }
@@ -111,7 +111,7 @@ export const MyAuctions: React.FC = () => {
         {
             title: 'Action',
             key: 'action',
-            render: (_: any, record: UserBid) => (
+            render: (_: unknown, record: UserBid) => (
                 <Button size="small" onClick={() => navigate(`/auctions/${record.auction.id}`)}>
                     View
                 </Button>

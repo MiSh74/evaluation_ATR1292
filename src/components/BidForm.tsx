@@ -2,7 +2,8 @@ import React from 'react';
 import { Form, InputNumber, Button, notification } from 'antd';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { auctionsApi } from '../api/auctions.api';
-import { useAuth } from '../auth/AuthContext';
+import { useAuth } from '../auth/useAuth';
+import { AxiosError } from 'axios';
 
 interface BidFormProps {
     auctionId: string;
@@ -41,9 +42,10 @@ export const BidForm: React.FC<BidFormProps> = ({
             queryClient.invalidateQueries({ queryKey: ['auction', auctionId] });
             queryClient.invalidateQueries({ queryKey: ['auction-bids', auctionId] });
         },
-        onError: (error: any) => {
-            const errorMsg = error.response?.data?.message;
-            const errorCode = error.response?.data?.errorCode;
+        onError: (error) => {
+            const axiosError = error as AxiosError<{ message: string }>;
+            const errorMsg = axiosError.response?.data?.message;
+            const errorCode = (axiosError.response?.data as any)?.errorCode;
 
             let description = errorMsg || 'Failed to place bid';
 

@@ -2,7 +2,8 @@ import React from 'react';
 import { Layout } from 'antd';
 import { LogoutOutlined, ThunderboltOutlined, WalletOutlined, UserOutlined } from '@ant-design/icons';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
-import { useAuth } from '../auth/AuthContext';
+import { useAuth } from '../auth/useAuth';
+import { useSocket } from '../sockets/useSocket';
 import styles from './AppLayout.module.css';
 
 import { AddFundsModal } from './AddFundsModal';
@@ -13,6 +14,7 @@ export const AppLayout: React.FC = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
+    const { isConnected } = useSocket();
     const [isAddFundsOpen, setIsAddFundsOpen] = React.useState(false);
 
     const handleLogout = async () => {
@@ -29,6 +31,7 @@ export const AppLayout: React.FC = () => {
                     <div className={styles['app-brand']} onClick={() => navigate('/auctions')}>
                         <ThunderboltOutlined className={styles['app-brand-icon']} />
                         <span className={styles['app-brand-text']}>LiveBid</span>
+                        <div className={`${styles['status-indicator']} ${isConnected ? styles['status-online'] : styles['status-offline']}`} title={isConnected ? 'Connected' : 'Disconnected'} />
                     </div>
 
                     <nav className={styles['app-nav']}>
